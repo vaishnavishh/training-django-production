@@ -25,12 +25,17 @@ SECRET_KEY = 'django-insecure-d*q71nk+fgwf#!$7^ca*kc5nq%5*qw&!#eh93b(2y3$#v=21_-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'training-django-production.onrender.com', 
+    '127.0.0.1', 
+    'localhost',
+    '.onrender.com'
+]
 
 
 # Application definition
-
 INSTALLED_APPS = [
+    'whitenoise.runserver_nostatic',  # Add this for WhiteNoise
     'Shop.apps.ShopConfig',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -40,8 +45,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 ]
 
+# Cleaned up duplicate Middlewares!
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # WhiteNoise must be right after Security
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -117,13 +124,23 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+]
+
+# --- ADDED FOR PRODUCTION STATIC FILES ---
+STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-
-STATICFILES_DIRS = [
-    BASE_DIR / "static",
-    
-]
+# --- PRODUCTION SECURITY SETTINGS ---
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
